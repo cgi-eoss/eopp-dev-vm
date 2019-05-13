@@ -10,6 +10,8 @@ node default {
     'openjdk-8-jdk',
     'python',
     'snapd',
+    'zip',
+    'unzip',
   ], { ensure => latest })
 
   # Install kubernetes-related snaps
