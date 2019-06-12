@@ -23,7 +23,7 @@ node default {
   }
 
   # Install bazelisk bazel wrapper
-  $bazelisk_version = '0.0.4'
+  $bazelisk_version = '0.0.7'
   $bazelisk_path = '/usr/local/bin/bazelisk'
   archive { 'bazelisk':
     path   => $bazelisk_path,

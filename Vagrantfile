@@ -47,7 +47,7 @@ Vagrant.configure("2") do |config|
 
   # Generic port forwarding for HTTP/HTTPS
   config.vm.network "forwarded_port", guest: 80, host: 8080
-  config.vm.network "forwarded_port", guest: 443, host: 8081
+  config.vm.network "forwarded_port", guest: 443, host: 8079
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -72,11 +72,14 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--hpet", "off"]
     vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
     vb.customize ["modifyvm", :id, "--nestedpaging", "on"]
+    vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
     vb.customize ["modifyvm", :id, "--largepages", "on"]
     vb.customize ["modifyvm", :id, "--vtxvpid", "on"]
     vb.customize ["modifyvm", :id, "--vtxux", "on"]
     vb.customize ["modifyvm", :id, "--vram", "128"]
     vb.customize ["modifyvm", :id, "--accelerate3d", "on"]
+    vb.customize ["modifyvm", :id, "--monitorcount", "1"]
+    vb.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
   end
 
   if Vagrant.has_plugin?("vagrant-puppet-install")
