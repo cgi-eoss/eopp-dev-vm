@@ -8,6 +8,9 @@ export DEBCONF_NONINTERACTIVE_SEEN=true
 apt-get update
 apt-get -y --no-install-recommends install\
     apt-transport-https\
+    autoconf\
+    automake\
+    bash-completion\
     build-essential\
     curl\
     firefox\
@@ -18,8 +21,9 @@ apt-get -y --no-install-recommends install\
     libdbus-glib-1-2\
     libgtk-3.0\
     liblzma-dev\
+    libpng-dev\
     libxt6\
-	linux-headers-generic\
+    linux-headers-generic\
     openjdk-11-jdk\
     openssh-server\
     python\
@@ -54,7 +58,7 @@ ln -snf /usr/local/bin/bazelisk /usr/local/bin/bazel
 
 apt-get update
 apt-get -y --no-install-recommends install\
-	bazel\
+    bazel\
     kubectl\
     nodejs\
     yarn
