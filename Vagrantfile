@@ -3,6 +3,13 @@
 
 require 'concurrent'
 
+$vm_memory ||= 2048
+$vm_cpus ||= Concurrent.processor_count
+$vm_gui ||= false
+$disk_size ||= "64GB" # default size of the bento/ubuntu-20.04 box
+$bridge_network ||= false
+$bridge_gateway ||= ""
+
 # Plugins
 #
 # Check if the first argument to the vagrant
@@ -13,7 +20,6 @@ if ARGV[0] != 'plugin'
     'vagrant-disksize',
     'vagrant-hostmanager',
     'vagrant-proxyconf',
-    'vagrant-puppet-install',
     'vagrant-timezone',
     'vagrant-vbguest'
   ]
@@ -29,7 +35,7 @@ if ARGV[0] != 'plugin'
 end
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "bento/ubuntu-18.04"
+  config.vm.box = "bento/ubuntu-20.04"
 
   config.vm.hostname = "eopp-dev-vm"
 
@@ -37,12 +43,17 @@ Vagrant.configure("2") do |config|
     config.timezone.value = :host
   end
 
+  if Vagrant.has_plugin?("vagrant-disksize")
+    config.disksize.size = $disk_size
+  end
+
   # Propagate standard proxy vars from host->VM
   # This could also be added globally in ~/.vagrant.d/Vagrantfile
   if Vagrant.has_plugin?("vagrant-proxyconf")
     config.proxy.http     = ENV['http_proxy']
     config.proxy.https    = ENV['https_proxy']
-    config.proxy.no_proxy = ENV['no_proxy']
+
+    config.proxy.no_proxy = ((ENV['no_proxy'] || '').split(',') | ['eopp-dev-vm', '10.0.2.15', '.svc', 'localhost', '127.0.0.1']).join(',') 
   end
 
   # Generic port forwarding for HTTP/HTTPS
@@ -51,22 +62,19 @@ Vagrant.configure("2") do |config|
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
-  config.vm.provider "virtualbox" do |vb|
-    vb.name = "eopp-dev-vm"
 
-    # Reduce disk overhead when multiple dev-vms (or other VMs based on this config.vm.box) are used
+  ["vmware_fusion", "vmware_workstation"].each do |vmware|
+    config.vm.provider vmware do |v|
+      v.vmx['memsize'] = $vm_memory
+      v.vmx['numvcpus'] = $vm_cpus
+    end
+  end
+
+  config.vm.provider :virtualbox do |vb|
+    vb.memory = $vm_memory
+    vb.cpus = $vm_cpus
+    vb.gui = $vm_gui
     vb.linked_clone = true
-
-    # Display the VirtualBox GUI when booting the machine
-    # vb.gui = true
-
-    # Automatically determine number of CPUs to use
-    vb.cpus = Concurrent.processor_count
-
-    # Customize the amount of memory on the VM - adjust as high as possible for your system!
-    vb.memory = "2048"
 
     # Other system customisations
     vb.customize ["modifyvm", :id, "--hpet", "off"]
@@ -76,18 +84,25 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--largepages", "on"]
     vb.customize ["modifyvm", :id, "--vtxvpid", "on"]
     vb.customize ["modifyvm", :id, "--vtxux", "on"]
-    vb.customize ["modifyvm", :id, "--vram", "128"]
+    vb.customize ["modifyvm", :id, "--vram", "32"]
     vb.customize ["modifyvm", :id, "--accelerate3d", "on"]
     vb.customize ["modifyvm", :id, "--monitorcount", "1"]
     vb.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
   end
 
-  if Vagrant.has_plugin?("vagrant-puppet-install")
-    config.puppet_install.puppet_version = :latest
+  config.vm.provider :hyperv do |hyperv|
+    hyperv.maxmemory = $vm_memory
+    hyperv.cpus = $vm_cpus
   end
 
-  config.vm.provision "puppet" do |puppet|
-    puppet.module_path = "modules"
+  # Install required development packages
+  config.vm.provision "packages", type: "shell" do |shell|
+    shell.path = "provision-packages.sh"
+  end
+
+  # Install a Kubernetes distribution
+  config.vm.provision "kubernetes", type: "shell" do |shell|
+    shell.path = "provision-kubernetes.sh"
   end
 
 end
