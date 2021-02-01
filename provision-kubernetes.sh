@@ -16,6 +16,7 @@ if [ -n "$HTTPS_PROXY" ] && ! grep -q '^HTTPS_PROXY' /var/snap/microk8s/current/
 
     microk8s.stop
     microk8s.start
+	sleep 5
 fi
 
 # Wait 5 minutes for things to settle down
@@ -48,3 +49,6 @@ for rcfile in /root/.bashrc /home/vagrant/.bashrc; do
     printf "\nhelm() {\n  microk8s.helm3 \"\$@\"\n}\nexport -f helm\n" >>"$rcfile"
   fi
 done
+
+# Add the microk8s kubeconf to the standard location for the vagrant user, for use by other tooling
+sudo -u vagrant sh -c "(mkdir /home/vagrant/.kube && microk8s.kubectl config view --raw >/home/vagrant/.kube/config)"

@@ -88,6 +88,7 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--accelerate3d", "on"]
     vb.customize ["modifyvm", :id, "--monitorcount", "1"]
     vb.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
+    vb.customize ["modifyvm", :id, "--clipboard-mode", "bidirectional"]
   end
 
   config.vm.provider :hyperv do |hyperv|

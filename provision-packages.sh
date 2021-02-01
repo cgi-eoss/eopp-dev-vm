@@ -41,6 +41,7 @@ REQUIRED_PKGS_1=(
   linux-headers-generic
   openjdk-11-jdk
   openssh-server
+  python-is-python3
   python2
   python2-dev
   python-setuptools
@@ -57,6 +58,7 @@ REQUIRED_PKGS_1=(
 
 REQUIRED_PKGS_2=(
   bazel
+  kubectl
   nodejs
   yarn
 )
