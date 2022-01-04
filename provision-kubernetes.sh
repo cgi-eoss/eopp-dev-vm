@@ -40,15 +40,5 @@ if ! microk8s.kubectl -n kube-system get configmap coredns -o yaml | grep -q "fo
     microk8s.kubectl -n kube-system get configmap coredns -o yaml | sed "s/\bforward \. [^\\\]*\\\n/forward . ${dns_servers}\\\n/" | microk8s.kubectl apply -f -
 fi
 
-# Set up the `kubectl` and `helm` wrapper functions for users
-for rcfile in /root/.bashrc /home/vagrant/.bashrc; do
-  if ! grep -q '^kubectl()' "$rcfile"; then
-    printf "\nkubectl() {\n  microk8s.kubectl \"\$@\"\n}\nexport -f kubectl\n" >>"$rcfile"
-  fi
-  if ! grep -q '^helm()' "$rcfile"; then
-    printf "\nhelm() {\n  microk8s.helm3 \"\$@\"\n}\nexport -f helm\n" >>"$rcfile"
-  fi
-done
-
 # Add the microk8s kubeconf to the standard location for the vagrant user, for use by other tooling
 sudo -u vagrant sh -c "(mkdir /home/vagrant/.kube && microk8s.kubectl config view --raw >/home/vagrant/.kube/config)"
