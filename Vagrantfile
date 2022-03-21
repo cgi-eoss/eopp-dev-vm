@@ -3,9 +3,9 @@
 
 require 'concurrent'
 
-$vm_memory ||= 2048
+$vm_memory ||= 20480
 $vm_cpus ||= Concurrent.processor_count
-$vm_gui ||= false
+$vm_gui ||= true
 $disk_size ||= "64GB" # default size of the bento/ubuntu-20.04 box
 $bridge_network ||= false
 $bridge_gateway ||= ""
@@ -17,7 +17,7 @@ $bridge_gateway ||= ""
 if ARGV[0] != 'plugin'
   # Define the plugins in an array format
   required_plugins = [
-    'vagrant-disksize',
+    #'vagrant-disksize',
     'vagrant-hostmanager',
     'vagrant-proxyconf',
     'vagrant-timezone',
@@ -35,7 +35,7 @@ if ARGV[0] != 'plugin'
 end
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "bento/ubuntu-20.04"
+  config.vm.box = "generic/ubuntu2004"
 
   config.vm.hostname = "eopp-dev-vm"
 
@@ -53,7 +53,7 @@ Vagrant.configure("2") do |config|
     config.proxy.http     = ENV['http_proxy']
     config.proxy.https    = ENV['https_proxy']
 
-    config.proxy.no_proxy = ((ENV['no_proxy'] || '').split(',') | ['eopp-dev-vm', '10.0.2.15', '.svc', 'localhost', '127.0.0.1']).join(',') 
+    config.proxy.no_proxy = ((ENV['no_proxy'] || '').split(',') | ['eopp-dev-vm', '10.0.2.15', '.svc', 'localhost', '127.0.0.1', '.localdomain', '.internal']).join(',')
   end
 
   # Generic port forwarding for HTTP/HTTPS
@@ -94,6 +94,15 @@ Vagrant.configure("2") do |config|
   config.vm.provider :hyperv do |hyperv|
     hyperv.maxmemory = $vm_memory
     hyperv.cpus = $vm_cpus
+    hyperv.enable_virtualization_extensions = true
+    hyperv.enable_enhanced_session_mode = true
+    hyperv.vm_integration_services = {
+      heartbeat: true,
+      shutdown: true,
+      time_synchronization: true,
+      key_value_pair_exchange: true,
+      guest_service_interface: true
+    }
   end
 
   # Install required development packages

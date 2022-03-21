@@ -65,7 +65,7 @@ REQUIRED_PKGS_2=(
 
 install_missing "${REQUIRED_PKGS_1[@]}"
 
-BAZELISK_VER="1.7.4"
+BAZELISK_VER="1.11.0"
 NODE_VER="node_12.x"
 
 # Set up additional apt repos
